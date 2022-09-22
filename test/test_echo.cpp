@@ -13,6 +13,7 @@ class MyServer{
             server.setConnectionCallback(std::bind(&MyServer::onConnection,this,std::placeholders::_1));
             server.setMessageCallback(std::bind(&MyServer::onMessage,this,std::placeholders::_1,std::placeholders::_2));
             // server.setWriteCompleteCallback(std::bind(&MyServer::onWriteComplete,this,std::placeholders::_1));
+            server.setThreadNum(2);
         }
 
         void onConnection(TcpConnectionPtr conn){
