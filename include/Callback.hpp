@@ -14,6 +14,8 @@ using EventCallback = std::function<void()>;
 // Acceptor
 using NewConnectionCallback = std::function<void(int,InetAddress&)>;
 
+// Timer
+using TimerCallback = std::function<void()>;
 
 using TcpConnectionPtr = std::shared_ptr<TcpConnection>;
 //用户定义

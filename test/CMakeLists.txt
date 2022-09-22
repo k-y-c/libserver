@@ -24,3 +24,6 @@ target_link_libraries(test_echo pthread server_net)
 
 add_executable(test_chargen test_chargen.cpp)
 target_link_libraries(test_chargen pthread server_net)
+
+add_executable(test_timer test_timer.cpp)
+target_link_libraries(test_timer pthread server_net)

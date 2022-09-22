@@ -3,6 +3,7 @@
 #include <functional>
 #include "Log.hpp"
 #include "Callback.hpp"
+#include <sys/epoll.h>
 
 class EventLoop;
 

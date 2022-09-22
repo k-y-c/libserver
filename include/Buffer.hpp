@@ -71,7 +71,7 @@ public:
         iov[1].iov_base = exbuf;
         iov[1].iov_len = 65535;
         ssize_t n =  readv(fd,iov,2);
-        LOG_INFO << "readv bytes:" << n;
+        // LOG_INFO << "readv bytes:" << n;
         int writable_ = writable();
         if(n>writable()){
             writeIdx_ = buf_.size();

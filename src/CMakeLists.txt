@@ -5,6 +5,7 @@ set(
     EventLoop.cpp
     TcpConnection.cpp
     Thread.cpp
+    Timer.cpp
 )
 
 add_library(server_net ${SRCS})
