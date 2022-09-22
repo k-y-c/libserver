@@ -20,15 +20,15 @@ class Buffer;
 class TcpConnection : public std::enable_shared_from_this<TcpConnection>
 {
 public:
-    TcpConnection(EventLoop* loop,int fd,InetAddress& local,InetAddress& peer);
+    TcpConnection(EventLoop *loop, int fd, InetAddress &local, InetAddress &peer);
 
     ~TcpConnection();
 
-    void setConnectionCallback(ConnectionCallback cb){connectionCallback_ = cb;};
+    void setConnectionCallback(ConnectionCallback cb) { connectionCallback_ = cb; };
     void setReadCallback(MessageCallback cb);
     // void setWriteCallback(EventCallback cb){writeCallback_ = cb;}
     void setCloseCallback(CloseCallback cb);
-    void setWriteCompleteCallback(WriteCompleteCallback cb){writeCompleteCallback = cb;}
+    void setWriteCompleteCallback(WriteCompleteCallback cb) { writeCompleteCallback = cb; }
 
     void handleRead();
 
@@ -36,42 +36,40 @@ public:
 
     void handleClose();
 
-    void connectionEstablished(){
-        LOG_INFO << "connectionEstablished";
-        channel_->enableRead();
-        if(connectionCallback_){
-            connectionCallback_(shared_from_this());
-        }
-    }
-    
-    void connectionDetroyed(){
-        channel_->remove();
-    }
+    void connectionEstablished();
+
+    void connectionDetroyed();
 
     void send(const std::string message);
 
-    void send(const void* data,size_t len);
+    void send(const void *data, size_t len);
 
-    void shutDown(){
-        loop_->runInLoop(std::bind(&TcpConnection::shutDownInLoop,this));
+    void shutDown()
+    {
+        loop_->runInLoop(std::bind(&TcpConnection::shutDownInLoop, this));
     }
 
-    void shutDownInLoop(){
-        ::shutdown(channel_->fd(),SHUT_WR);
+    void shutDownInLoop()
+    {
+        ::shutdown(channel_->fd(), SHUT_WR);
     }
 
+    int id() { return id_; }
 
-    int id(){return id_;}
+    EventLoop* getLoop(){
+        return loop_;
+    }
 
 private:
-    void sendInLoop(const std::string& message){
-        sendInLoop(message.c_str(),message.size());
+    void sendInLoop(const std::string &message)
+    {
+        sendInLoop(message.c_str(), message.size());
     }
 
-    void sendInLoop(const void* data,size_t len);
+    void sendInLoop(const void *data, size_t len);
 
 private:
-    EventLoop* loop_;
+    EventLoop *loop_;
     // Channel* channel_;
     int id_;
     std::shared_ptr<Socket> socket_;
@@ -81,10 +79,9 @@ private:
     MessageCallback messageCallback_;
     ConnectionCallback connectionCallback_;
     // EventCallback writeCallback_;
-    
+
     WriteCompleteCallback writeCompleteCallback;
     CloseCallback closeCallback_;
     Buffer inputBuffer_;
     Buffer outputBuffer_;
-
 };
