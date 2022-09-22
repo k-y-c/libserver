@@ -1,5 +1,6 @@
 #pragma once
 #include "EventLoop.hpp"
+#include "EventLoopThreadPool.hpp"
 #include "Acceptor.hpp"
 #include "TcpConnection.hpp"
 #include <functional>
@@ -13,9 +14,10 @@ class TcpServer
 public:
 
     TcpServer(EventLoop* loop,InetAddress& listenAddr):
-    loop_(loop),
+    baseLoop_(loop),
     acceptor_(new Acceptor(loop,listenAddr)),
-    localAddr_(listenAddr)
+    localAddr_(listenAddr),
+    eventLoopPool_(new EventLoopThreadPool(loop))
     {
         acceptor_->setConnectionCallback(std::bind(&TcpServer::newConnection,this,std::placeholders::_1,std::placeholders::_2));
     };
@@ -28,38 +30,47 @@ public:
 
     void start(){
         LOG_INFO << "Server Start!";
-        acceptor_->listen();
-        loop_->loop();
+        baseLoop_->runInLoop(std::bind(&Acceptor::listen,acceptor_));
+        eventLoopPool_->start();
+        baseLoop_->loop();
     }
 
+    void setThreadNum(int num){
+        eventLoopPool_->setThreadNum(num);
+    }
 
 private:
     void newConnection(int fd,InetAddress& peerAddr){
         LOG_INFO << "new connection: " << peerAddr.toIpPort().c_str();
-        TcpConnectionPtr conn(new TcpConnection(loop_,fd,localAddr_,peerAddr));
+        EventLoop* ioLoop = eventLoopPool_->getNextLoop();
+        TcpConnectionPtr conn(new TcpConnection(ioLoop,fd,localAddr_,peerAddr));
         connections_[fd] = conn;
         conn->setReadCallback(messageCallback);
         conn->setCloseCallback(std::bind(&TcpServer::removeConnection,this,std::placeholders::_1));
         conn->setConnectionCallback(connectionCallback);
         conn->setWriteCompleteCallback(writeCompleteCallback);
-        conn->connectionEstablished();
+        ioLoop->runInLoop(std::bind(&TcpConnection::connectionEstablished,conn));
+        // conn->connectionEstablished();
     }
 
     void removeConnection(TcpConnectionPtr tcpConn){
         LOG_INFO << "removeConnection";
-        loop_->runInLoop(std::bind(&TcpServer::removeConnectionInLoop,this,tcpConn));        
+        baseLoop_->runInLoop(std::bind(&TcpServer::removeConnectionInLoop,this,tcpConn));        
     }
 
     void removeConnectionInLoop(TcpConnectionPtr tcpConn){
+        LOG_INFO << "removeConnectionInLoop";
         connections_.erase(tcpConn->id());
         
         // FIXME multiloop时需要修改
-        tcpConn->connectionDetroyed();
-        // loop_->runInLoop(std::bind(&TcpConnection::connectionDetroyed,tcpConn));
+        EventLoop* ioLoop = tcpConn->getLoop();
+        // tcpConn->connectionDetroyed();
+        ioLoop->runInLoop(std::bind(&TcpConnection::connectionDetroyed,tcpConn));
     }
 
 private:
-    EventLoop* loop_;
+    EventLoop* baseLoop_;
+    EventLoopThreadPool* eventLoopPool_;
     Acceptor* acceptor_;
     ConnectionCallback connectionCallback;
     MessageCallback messageCallback;
