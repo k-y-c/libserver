@@ -11,6 +11,7 @@
 
 TcpConnection::TcpConnection(EventLoop *loop, int fd, InetAddress &local, InetAddress &peer)
     : loop_(loop),
+      state_(Connecting),
       localAddr_(local),
       id_(fd),
       peerAddr_(peer),
@@ -69,13 +70,15 @@ void TcpConnection::handleWrite()
 void TcpConnection::handleClose()
 {
     // LOG_INFO << "handleClose";
-    channel_->disableRead();
-    channel_->disableWrite();
+    state_ = Disconnected;
+    channel_->disableAll();
     closeCallback_(shared_from_this());
 }
 
 void TcpConnection::send(const std::string message)
 {
+    if (state_ != Connected)
+        return;
     if (loop_->isInLoopThread())
     {
         sendInLoop(message);
@@ -90,6 +93,8 @@ void TcpConnection::send(const std::string message)
 
 void TcpConnection::send(const void *data, size_t len)
 {
+    if (state_ != Connected)
+        return;
     if (loop_->isInLoopThread())
     {
         sendInLoop(data, len);
@@ -103,6 +108,11 @@ void TcpConnection::send(const void *data, size_t len)
 
 void TcpConnection::sendInLoop(const void *data, size_t len)
 {
+    if (state_ == Disconnected)
+    {
+        LOG_WARN << "disconnected, give up writing";
+        return;
+    }
     // LOG_INFO << "sendInLoop data:" << static_cast<const char*>(data);
     ssize_t n = write(channel_->fd(), data, len);
     int remain = len - n;
@@ -129,6 +139,7 @@ void TcpConnection::sendInLoop(const void *data, size_t len)
 void TcpConnection::connectionEstablished()
 {
     LOG_INFO << "connectionEstablished in loop: " << loop_->getLoopName().c_str();
+    state_ = Connected;
     channel_->enableRead();
     if (connectionCallback_)
     {
@@ -140,4 +151,5 @@ void TcpConnection::connectionDetroyed()
 {
     LOG_INFO << "connectionDetroyed";
     channel_->remove();
+    // LOG_INFO << "connectionDetroyed use_count: " << this.use_count();
 }

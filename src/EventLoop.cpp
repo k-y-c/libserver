@@ -94,18 +94,18 @@ std::string EventLoop::getLoopName()
     return name_;
 };
 
-TimerNode EventLoop::runAfter(uint64_t ms, TimerCallback cb)
+unsigned int EventLoop::runAfter(uint64_t ms, TimerCallback cb)
 {
     TimeStamp ts = Clock::now() + MilliSeconds(ms);
     return timer_->addTimer(cb, ts, MilliSeconds(0));
 }
 
-TimerNode EventLoop::runEvery(uint64_t ms, TimerCallback cb)
+unsigned int EventLoop::runEvery(uint64_t ms, TimerCallback cb)
 {
     TimeStamp ts = Clock::now() + MilliSeconds(ms);
     return timer_->addTimer(cb, ts, MilliSeconds(ms));
 }
 
-void EventLoop::cancel(TimerNode &node){
-    timer_->cancel(node);
+void EventLoop::cancel(unsigned int id){
+    timer_->cancel(id);
 }

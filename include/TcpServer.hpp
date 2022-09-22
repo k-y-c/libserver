@@ -65,7 +65,13 @@ private:
         // FIXME multiloop时需要修改
         EventLoop* ioLoop = tcpConn->getLoop();
         // tcpConn->connectionDetroyed();
+
+        if(closeCallback)closeCallback(tcpConn);
+
+        // LOG_INFO << "removeConnectionInLoop use_count: " << tcpConn.use_count();
+
         ioLoop->runInLoop(std::bind(&TcpConnection::connectionDetroyed,tcpConn));
+        // LOG_INFO << "removeConnectionInLoop use_count: " << tcpConn.use_count();
     }
 
 private:

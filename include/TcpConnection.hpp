@@ -46,6 +46,7 @@ public:
 
     void shutDown()
     {
+        state_ = Disconnecting;
         loop_->runInLoop(std::bind(&TcpConnection::shutDownInLoop, this));
     }
 
@@ -56,7 +57,8 @@ public:
 
     int id() { return id_; }
 
-    EventLoop* getLoop(){
+    EventLoop *getLoop()
+    {
         return loop_;
     }
 
@@ -69,9 +71,18 @@ private:
     void sendInLoop(const void *data, size_t len);
 
 private:
+    enum State
+    {
+        Disconnected,
+        Connecting,
+        Connected,
+        Disconnecting
+    };
+
     EventLoop *loop_;
     // Channel* channel_;
     int id_;
+    State state_;
     std::shared_ptr<Socket> socket_;
     std::shared_ptr<Channel> channel_;
     InetAddress localAddr_;

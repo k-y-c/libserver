@@ -25,11 +25,11 @@ public:
 
     void loop();
 
-    TimerNode runAfter(uint64_t ms, TimerCallback cb);
+    unsigned int runAfter(uint64_t ms, TimerCallback cb);
 
-    TimerNode runEvery(uint64_t ms, TimerCallback cb);
+    unsigned int runEvery(uint64_t ms, TimerCallback cb);
 
-    void cancel(TimerNode &node);
+    void cancel(unsigned int id);
 
     void handleRead();
 
