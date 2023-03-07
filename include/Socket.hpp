@@ -6,6 +6,7 @@
 #include <string.h>
 #include <string>
 #include <unistd.h>
+#include "Log.hpp"
 
 inline uint64_t hostToNetwork64(uint64_t host64)
 {

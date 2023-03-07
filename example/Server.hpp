@@ -7,7 +7,7 @@
 #include "Log.hpp"
 #include "Buffer.hpp"
 #include <string>
-#include "TcpConn.hpp"
+#include "TcpConnection.hpp"
 #include <map>
 #include <bits/shared_ptr.h>
 

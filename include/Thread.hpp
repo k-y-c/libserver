@@ -49,10 +49,12 @@ class ThreadPool{
 public:
     typedef std::function<void ()> Task;
     using LockerGuard = std::lock_guard<std::mutex>;
-    ThreadPool(int nums):nums_(nums),locker(),cond(){
+    ThreadPool(int nums):nums_(nums),locker(),cond(),stop_(false){
 
     };
     ~ThreadPool(){
+        stop_ = true;
+        cond.notify_all();
         stop();
     }
 
@@ -72,9 +74,9 @@ public:
 
     void threadFunc(){
         std::unique_lock<std::mutex> lck(this->locker);
-        while(true){
+        while(!stop_){
             Task task;      
-            while(this->que.empty()){
+            while(!stop_&&this->que.empty()){
                 this->cond.wait(lck);
             }
             task = this->que.front();
@@ -96,6 +98,7 @@ public:
 
 private:
     int nums_;
+    bool stop_;
     std::vector<std::thread*> Threads;
     std::queue<Task> que;
     // Locker locker;

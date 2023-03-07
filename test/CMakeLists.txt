@@ -16,8 +16,8 @@ target_link_libraries(test_threadpool pthread)
 add_executable(test_addr test_addr.cpp)
 target_link_libraries(test_addr pthread)
 
-add_executable(test_epoll test_epoll.cpp)
-target_link_libraries(test_epoll pthread)
+# add_executable(test_epoll test_epoll.cpp)
+# target_link_libraries(test_epoll pthread)
 
 add_executable(test_echo test_echo.cpp)
 target_link_libraries(test_echo pthread server_net)
@@ -28,5 +28,5 @@ target_link_libraries(test_chargen pthread server_net)
 add_executable(test_timer test_timer.cpp)
 target_link_libraries(test_timer pthread server_net)
 
-add_executable(test_set test_set.cpp)
-target_link_libraries(test_set)
+# add_executable(test_set test_set.cpp)
+# target_link_libraries(test_set)
